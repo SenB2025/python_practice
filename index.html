@@ -66,6 +66,43 @@
             color: #555;
         }
 
+        /* Arrange the code editor and output panel side by side. */
+
+.editor-container {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+}
+
+.panel {
+    flex: 1;
+}
+
+.panel h3 {
+    margin-top: 0;
+}
+
+#output {
+    background: #1e1e1e;
+    color: #eee;
+    padding: 15px;
+    min-height: 320px;
+    margin: 0;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    font-family: Consolas, monospace;
+    font-size: 16px;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+/* On smaller screens, stack the panels vertically. */
+
+@media (max-width: 700px) {
+    .editor-container {
+        flex-direction: column;
+    }
+}
         #output {
             background: #1e1e1e;
             color: #eee;
@@ -93,16 +130,35 @@ numbers = [10, 20, 30, 40]
 print("Numbers:", numbers)
 print("First number:", numbers[0])
 print("Total:", sum(numbers))
+<!-- This layout places the Python input and output areas side by side. -->
+
+<div class="editor-container">
+
+    <div class="panel">
+        <h3>Python Code</h3>
+
+        <textarea id="code"># Try changing this code and run it.
+
+numbers = [10, 20, 30, 40]
+
+print("Numbers:", numbers)
+print("First number:", numbers[0])
+print("Total:", sum(numbers))
 </textarea>
 
-    <br>
+        <button id="run">▶ Run Python</button>
+        <button id="clear">Clear Output</button>
+    </div>
 
-    <button id="run">▶ Run Python</button>
-    <button id="clear">Clear Output</button>
+    <div class="panel">
+        <h3>Output</h3>
 
-    <div id="status">Loading Python...</div>
+        <pre id="output"></pre>
+    </div>
 
-    <pre id="output"></pre>
+</div>
+
+<div id="status">Loading Python...</div>
 
     <script>
         let pyodide;
