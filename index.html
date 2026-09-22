@@ -122,7 +122,6 @@ print("Total:", sum(numbers))
             try {
                 pyodide.setStdout({
                     batched: (text) => {
-                        output.textContent += text;
                         output.textContent += text + "\n";
                     }
                 });
