@@ -1,19 +1,24 @@
-<!-- This page creates a simple browser-based Python editor using Pyodide. -->
+<!-- This page creates a simple browser-based Python practice editor with code and output side by side. -->
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Python Practice</title>
 
+    <!-- Load Pyodide so Python can run directly in the browser. -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"></script>
 
     <style>
+
+        /* Basic page layout */
+
         body {
             font-family: Arial, sans-serif;
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 30px;
             background: #f5f6f8;
@@ -28,26 +33,57 @@
             margin-bottom: 25px;
         }
 
+
+        /* Code and output panels */
+
+        .editor-container {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .panel {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .panel h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+
+        /* Python code area */
+
         textarea {
             width: 100%;
             height: 320px;
             box-sizing: border-box;
             padding: 15px;
-            font-family: Consolas, monospace;
+
+            font-family: Consolas, "Courier New", monospace;
             font-size: 16px;
             line-height: 1.5;
+
             border: 1px solid #bbb;
             border-radius: 8px;
+
             background: white;
+
             resize: vertical;
         }
+
+
+        /* Buttons */
 
         button {
             padding: 10px 20px;
             margin-top: 12px;
             margin-right: 8px;
+
             border: none;
             border-radius: 6px;
+
             font-size: 15px;
             cursor: pointer;
         }
@@ -57,63 +93,65 @@
             color: white;
         }
 
+        #run:hover {
+            background: #555;
+        }
+
         #clear {
             background: #ddd;
         }
 
-        #status {
-            margin: 15px 0;
-            color: #555;
+        #clear:hover {
+            background: #ccc;
         }
 
-        /* Arrange the code editor and output panel side by side. */
 
-.editor-container {
-    display: flex;
-    gap: 20px;
-    align-items: stretch;
-}
+        /* Output window */
 
-.panel {
-    flex: 1;
-}
-
-.panel h3 {
-    margin-top: 0;
-}
-
-#output {
-    background: #1e1e1e;
-    color: #eee;
-    padding: 15px;
-    min-height: 320px;
-    margin: 0;
-    border-radius: 8px;
-    white-space: pre-wrap;
-    font-family: Consolas, monospace;
-    font-size: 16px;
-    box-sizing: border-box;
-    overflow: auto;
-}
-
-/* On smaller screens, stack the panels vertically. */
-
-@media (max-width: 700px) {
-    .editor-container {
-        flex-direction: column;
-    }
-}
         #output {
             background: #1e1e1e;
             color: #eee;
+
             padding: 15px;
-            min-height: 120px;
+
+            height: 320px;
+            box-sizing: border-box;
+
+            margin: 0;
+
             border-radius: 8px;
+
             white-space: pre-wrap;
-            font-family: Consolas, monospace;
+            overflow: auto;
+
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 16px;
+            line-height: 1.5;
         }
+
+
+        /* Python loading / status message */
+
+        #status {
+            margin-top: 15px;
+            color: #555;
+        }
+
+
+        /* Stack panels on smaller screens */
+
+        @media (max-width: 700px) {
+
+            .editor-container {
+                flex-direction: column;
+            }
+
+        }
+
     </style>
+
 </head>
+
 
 <body>
 
@@ -123,21 +161,17 @@
         Write Python code, run it, experiment, and learn by doing.
     </div>
 
-    <textarea id="code"># Try changing this code and run it.
 
-numbers = [10, 20, 30, 40]
+    <div class="editor-container">
 
-print("Numbers:", numbers)
-print("First number:", numbers[0])
-print("Total:", sum(numbers))
-<!-- This layout places the Python input and output areas side by side. -->
 
-<div class="editor-container">
+        <!-- LEFT: Python code -->
 
-    <div class="panel">
-        <h3>Python Code</h3>
+        <div class="panel">
 
-        <textarea id="code"># Try changing this code and run it.
+            <h3>Python Code</h3>
+
+            <textarea id="code"># Try changing this code and run it.
 
 numbers = [10, 20, 30, 40]
 
@@ -146,57 +180,114 @@ print("First number:", numbers[0])
 print("Total:", sum(numbers))
 </textarea>
 
-        <button id="run">▶ Run Python</button>
-        <button id="clear">Clear Output</button>
+            <br>
+
+            <button id="run">▶ Run Python</button>
+
+            <button id="clear">Clear Output</button>
+
+        </div>
+
+
+        <!-- RIGHT: Python output -->
+
+        <div class="panel">
+
+            <h3>Output</h3>
+
+            <pre id="output"></pre>
+
+        </div>
+
     </div>
 
-    <div class="panel">
-        <h3>Output</h3>
 
-        <pre id="output"></pre>
+    <div id="status">
+        Loading Python...
     </div>
 
-</div>
-
-<div id="status">Loading Python...</div>
 
     <script>
+
+        /* Load Python into the browser using Pyodide. */
+
         let pyodide;
 
+
         async function loadPython() {
+
             pyodide = await loadPyodide();
+
             document.getElementById("status").textContent =
                 "Python is ready. Write some code and click Run.";
+
         }
 
+
+        /* Run the student's Python code and display the result. */
+
         async function runPython() {
+
             const code = document.getElementById("code").value;
+
             const output = document.getElementById("output");
 
             output.textContent = "";
 
+
             try {
+
                 pyodide.setStdout({
+
                     batched: (text) => {
+
                         output.textContent += text + "\n";
+
                     }
+
                 });
+
 
                 await pyodide.runPythonAsync(code);
 
-            } catch (error) {
-                output.textContent = error;
             }
+
+
+            catch (error) {
+
+                output.textContent = error;
+
+            }
+
         }
 
-        document.getElementById("run").addEventListener("click", runPython);
 
-        document.getElementById("clear").addEventListener("click", () => {
-            document.getElementById("output").textContent = "";
-        });
+        /* Run Python when the Run button is clicked. */
+
+        document.getElementById("run").addEventListener(
+            "click",
+            runPython
+        );
+
+
+        /* Clear the output window. */
+
+        document.getElementById("clear").addEventListener(
+            "click",
+            () => {
+
+                document.getElementById("output").textContent = "";
+
+            }
+        );
+
+
+        /* Start loading Python. */
 
         loadPython();
+
     </script>
 
 </body>
+
 </html>
